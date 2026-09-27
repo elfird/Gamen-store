@@ -15,9 +15,20 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis;
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-});
+const connectionUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    datasources: connectionUrl
+      ? {
+          db: {
+            url: connectionUrl,
+          },
+        }
+      : undefined,
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
