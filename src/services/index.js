@@ -1,10 +1,11 @@
-/**
- * Services index.
- *
- * Services encapsulate business logic between the UI and the database.
- * All database access must go through a service — never directly from a component.
- *
- * Services are server-side only. Do not import services in client components.
- */
-
 export * from "./product.service";
+export * from "./order.service";
+export * from "./admin-auth.service";
+export * from "./inventory.service";
+export * from "./purchase.service";
+export * from "./supplier.service";
+export * from "./customer.service";
+export * from "./finance.service";
+export * from "./dashboard.service";
+export * from "./report.service";
+export * from "./setting.service";

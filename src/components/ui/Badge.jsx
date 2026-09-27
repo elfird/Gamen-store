@@ -35,7 +35,7 @@ const dotColors = {
  *   children: React.ReactNode,
  * }} props
  */
-export default function Badge({
+export function Badge({
   variant = "default",
   size = "md",
   dot = false,
@@ -64,3 +64,5 @@ export default function Badge({
     </span>
   );
 }
+
+export default Badge;
