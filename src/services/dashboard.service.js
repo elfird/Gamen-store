@@ -5,7 +5,11 @@ import { getInventoryStats } from "./inventory.service";
 /**
  * Calculate date range from filter preset.
  */
-function getDateRangeFromPreset(preset = "30d") {
+function getDateRangeFromPreset(preset = "all") {
+  if (preset === "all" || preset === "ALL") {
+    return {};
+  }
+
   const now = new Date();
   const end = new Date(now);
   let start = new Date(now);
@@ -21,13 +25,13 @@ function getDateRangeFromPreset(preset = "30d") {
       start.setDate(start.getDate() - 30);
       break;
     case "3m":
-      start.setMonth(start.getMonth() - 3);
+      start.setMonth(start.getMonth() - 90);
       break;
     case "1y":
       start.setFullYear(start.getFullYear() - 1);
       break;
     default:
-      start.setDate(start.getDate() - 30);
+      return {};
   }
 
   return { dateFrom: start.toISOString(), dateTo: end.toISOString() };
@@ -36,7 +40,7 @@ function getDateRangeFromPreset(preset = "30d") {
 /**
  * Get comprehensive Admin Dashboard metrics.
  */
-export async function getDashboardMetrics(preset = "30d", customRange = {}) {
+export async function getDashboardMetrics(preset = "all", customRange = {}) {
   const dateRange = customRange.dateFrom && customRange.dateTo
     ? customRange
     : getDateRangeFromPreset(preset);
@@ -93,14 +97,15 @@ export async function getDashboardMetrics(preset = "30d", customRange = {}) {
 
   // Aggregate monthly / periodic chart data points
   // Fetch completed orders in date range for sales timeline chart
+  const orderWhere = { status: "COMPLETED" };
+  if (dateRange.dateFrom || dateRange.dateTo) {
+    orderWhere.createdAt = {};
+    if (dateRange.dateFrom) orderWhere.createdAt.gte = new Date(dateRange.dateFrom);
+    if (dateRange.dateTo) orderWhere.createdAt.lte = new Date(dateRange.dateTo);
+  }
+
   const completedOrders = await prisma.order.findMany({
-    where: {
-      status: "COMPLETED",
-      createdAt: {
-        gte: new Date(dateRange.dateFrom),
-        lte: new Date(dateRange.dateTo),
-      },
-    },
+    where: orderWhere,
     select: {
       total: true,
       createdAt: true,

@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 
 export default function AdminDashboardPage() {
-  const [period, setPeriod] = useState("30d");
+  const [period, setPeriod] = useState("all");
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
 
-  const fetchDashboard = async (selectedPeriod) => {
+  const fetchDashboard = useCallback(async (selectedPeriod) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/dashboard?period=${selectedPeriod}`);
@@ -24,11 +24,11 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDashboard(period);
-  }, [period]);
+  }, [period, fetchDashboard]);
 
   const kpis = dashboardData?.kpis || {};
   const tables = dashboardData?.tables || {};
@@ -48,11 +48,12 @@ export default function AdminDashboardPage() {
         {/* Filter Presets */}
         <div className="inline-flex p-1 bg-surface rounded-xl border border-border text-xs font-semibold self-start sm:self-auto shadow-2xs">
           {[
-            { id: "today", label: "Hari Ini" },
-            { id: "7d", label: "7 Hari" },
-            { id: "30d", label: "30 Hari" },
-            { id: "3m", label: "3 Bulan" },
+            { id: "all", label: "Semua Waktu" },
             { id: "1y", label: "1 Tahun" },
+            { id: "3m", label: "3 Bulan" },
+            { id: "30d", label: "30 Hari" },
+            { id: "7d", label: "7 Hari" },
+            { id: "today", label: "Hari Ini" },
           ].map((item) => (
             <button
               key={item.id}
