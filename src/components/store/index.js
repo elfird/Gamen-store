@@ -1,10 +1,11 @@
 /**
- * Public storefront components.
+ * Public storefront layout & UI components.
  * Components used on the customer-facing website.
  */
 
-// export { default as ProductCard } from "./ProductCard";
-// export { default as ProductGallery } from "./ProductGallery";
-// export { default as CartButton } from "./CartButton";
-// export { default as Navbar } from "./Navbar";
-// export { default as Footer } from "./Footer";
+export { default as Navbar } from "./Navbar";
+export { default as MobileNav } from "./MobileNav";
+export { default as Footer } from "./Footer";
+export { default as PageContainer } from "./PageContainer";
+export { default as SectionContainer } from "./SectionContainer";
+export { default as StoreLayout } from "./StoreLayout";
