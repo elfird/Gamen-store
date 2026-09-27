@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import clsx from "clsx";
 import { formatCurrency } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
+import { useCart } from "@/context/CartContext";
 import { Badge, Button } from "@/components/ui";
 
 /**
@@ -20,6 +21,7 @@ import { Badge, Button } from "@/components/ui";
  */
 export default function ProductInfo({ product }) {
   const { toast } = useToast();
+  const { addItem } = useCart();
 
   const {
     name,
@@ -103,10 +105,10 @@ export default function ProductInfo({ product }) {
       return;
     }
 
-    toast({
-      title: "Ditambahkan ke Keranjang",
-      description: `${name} (${currentVariant.storage} - ${currentVariant.color}) berhasil dimasukkan ke keranjang.`,
-      variant: "success",
+    addItem({
+      product,
+      variant: currentVariant,
+      quantity,
     });
   };
 

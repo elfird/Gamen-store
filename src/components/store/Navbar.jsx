@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { useCart } from "@/context/CartContext";
 import MobileNav from "./MobileNav";
 
 /**
@@ -17,9 +18,12 @@ import MobileNav from "./MobileNav";
  * - Mobile responsive drawer
  *
  * @param {Object} props
- * @param {number} [props.cartCount=0]
+ * @param {number} [props.cartCount]
  */
-export default function Navbar({ cartCount = 0 }) {
+export default function Navbar({ cartCount: explicitCartCount }) {
+  const { itemCount: contextCartCount } = useCart();
+  const cartCount = explicitCartCount !== undefined ? explicitCartCount : contextCartCount;
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
