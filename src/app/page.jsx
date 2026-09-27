@@ -39,14 +39,9 @@ export default async function HomePage() {
 
         <PageContainer>
           <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">
-            {/* Top Tag */}
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-white/90 text-xs font-medium tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-              <span>Official Warranty & Guaranteed IMEI</span>
-            </div>
 
             {/* Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.08]">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.08] text-white">
               Find Your Next iPhone.
             </h1>
 
@@ -57,22 +52,17 @@ export default async function HomePage() {
 
             {/* CTA Buttons */}
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-              <Link href="#featured">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-white text-[#111111] hover:bg-white/90 font-semibold px-8 rounded-full shadow-lg"
-                >
-                  Shop iPhone
-                </Button>
+              <Link
+                href="#featured"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-full bg-white text-[#111111] hover:bg-[#EAEAEA] font-bold text-base transition-all shadow-md hover:scale-[1.02]"
+              >
+                <span className="text-[#111111] font-bold">Shop iPhone</span>
               </Link>
-              <Link href="#models">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto border-white/25 text-white hover:bg-white/10 px-8 rounded-full"
-                >
-                  Shop by Model
-                </Button>
+              <Link
+                href="#models"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-full bg-transparent text-white border border-white/30 hover:bg-white/10 hover:border-white/50 font-semibold text-base transition-all"
+              >
+                <span className="text-white font-semibold">Shop by Model</span>
               </Link>
             </div>
 
