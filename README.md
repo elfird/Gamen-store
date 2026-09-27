@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gamen Store
+
+Modern iPhone e-commerce and store management system.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: JavaScript
+- **Styling**: Tailwind CSS v4
+- **Database**: PostgreSQL via Prisma ORM
+- **Auth**: Auth.js *(to be configured)*
+- **Images**: Cloudinary *(to be configured)*
+- **Deployment**: Vercel
+
+## Project Structure
+
+```
+src/
+├── app/              # Next.js App Router pages and layouts
+├── components/
+│   ├── ui/           # Reusable UI primitives (Button, Badge, Modal…)
+│   ├── store/        # Customer storefront components
+│   ├── admin/        # Admin dashboard components
+│   ├── products/     # Product-specific components
+│   ├── orders/       # Order-specific components
+│   └── finance/      # Finance-specific components
+├── lib/
+│   ├── prisma.js     # Prisma singleton client
+│   ├── utils.js      # Utility functions
+│   ├── constants.js  # Business enums and labels
+│   └── api.js        # API response helpers
+├── services/         # Business logic layer
+├── hooks/            # Custom React hooks
+└── middleware.js     # Route protection
+prisma/
+├── schema.prisma     # Database schema
+└── seed.js           # Seed script
+```
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and fill in:
+- `DATABASE_URL` — your PostgreSQL connection string
+- `AUTH_SECRET` — generate with `openssl rand -base64 32`
+- `WHATSAPP_NUMBER` — business WhatsApp in international format
+- Cloudinary credentials
+
+### 3. Set up the database
+
+```bash
+# Push schema to database (development)
+npm run db:push
+
+# Or use migrations (recommended for production)
+npm run db:migrate
+
+# Seed initial data
+npm run db:seed
+```
+
+### 4. Generate Prisma client
+
+```bash
+npm run db:generate
+```
+
+### 5. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build production bundle |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:migrate` | Run database migrations |
+| `npm run db:push` | Push schema without migration |
+| `npm run db:studio` | Open Prisma Studio |
+| `npm run db:seed` | Seed database with initial data |
 
-## Learn More
+## Business Rules
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [AGENTS.md](./AGENTS.md) for complete business rules and development guidelines.

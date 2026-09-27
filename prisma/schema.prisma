@@ -1,0 +1,395 @@
+// ─── Prisma Schema ─────────────────────────────────────────────────────────────
+// Gamen Store — iPhone E-Commerce & Store Management System
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum ProductCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  REFURBISHED
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  RETURNED
+  DAMAGED
+}
+
+enum PurchaseStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  CONTACTED
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryMethod {
+  PICKUP
+  DELIVERY
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  E_WALLET
+  OTHER
+}
+
+enum FinanceType {
+  INCOME
+  EXPENSE
+  CAPITAL
+}
+
+// ─── 1. User ──────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(STAFF)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([active])
+}
+
+// ─── 2. Category ──────────────────────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([slug])
+  @@index([active])
+}
+
+// ─── 3. Product ───────────────────────────────────────────────────────────────
+
+model Product {
+  id          String           @id @default(cuid())
+  categoryId  String
+  name        String
+  slug        String           @unique
+  model       String
+  description String?          @db.Text
+  condition   ProductCondition @default(NEW)
+  warranty    String?
+  active      Boolean          @default(true)
+  featured    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants ProductVariant[]
+  images   ProductImage[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([active])
+}
+
+// ─── 4. Product Variant ───────────────────────────────────────────────────────
+
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String
+  sku           String   @unique
+  storage       String   // e.g. "128GB", "256GB", "512GB", "1TB"
+  color         String
+  price         Decimal  @db.Decimal(15, 2)
+  purchasePrice Decimal  @db.Decimal(15, 2)
+  stock         Int      @default(0)
+  reservedStock Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventoryUnits InventoryUnit[]
+  orderItems     OrderItem[]
+  purchaseItems  PurchaseItem[]
+
+  @@index([productId])
+  @@index([sku])
+  @@index([active])
+  @@index([storage])
+  @@index([color])
+}
+
+// ─── 5. Product Image ─────────────────────────────────────────────────────────
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+// ─── 6. Inventory Unit ────────────────────────────────────────────────────────
+
+model InventoryUnit {
+  id            String           @id @default(cuid())
+  variantId     String
+  imei          String           @unique
+  serialNumber  String?
+  purchasePrice Decimal          @db.Decimal(15, 2)
+  sellingPrice  Decimal?         @db.Decimal(15, 2)
+  batteryHealth Int?             // percentage 0-100
+  condition     ProductCondition @default(GOOD)
+  status        InventoryStatus  @default(AVAILABLE)
+  purchaseId    String?
+  supplierId    String?
+  soldOrderId   String?
+  notes         String?          @db.Text
+  receivedAt    DateTime         @default(now())
+  soldAt        DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  purchase   Purchase?      @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  supplier   Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  soldOrder  Order?         @relation("SoldOrder", fields: [soldOrderId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([imei])
+  @@index([variantId])
+  @@index([status])
+  @@index([purchaseId])
+  @@index([supplierId])
+  @@index([soldOrderId])
+}
+
+// ─── 7. Customer ──────────────────────────────────────────────────────────────
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  whatsapp   String
+  email      String?
+  province   String?
+  city       String?
+  district   String?
+  postalCode String?
+  address    String?  @db.Text
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([whatsapp])
+}
+
+// ─── 8. Supplier ──────────────────────────────────────────────────────────────
+
+model Supplier {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  whatsapp      String?
+  email         String?
+  address       String?  @db.Text
+  notes         String?  @db.Text
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  purchases      Purchase[]
+  inventoryUnits InventoryUnit[]
+
+  @@index([name])
+  @@index([whatsapp])
+  @@index([active])
+}
+
+// ─── 9. Purchase ──────────────────────────────────────────────────────────────
+
+model Purchase {
+  id             String         @id @default(cuid())
+  purchaseNumber String         @unique
+  supplierId     String
+  purchaseDate   DateTime
+  invoiceNumber  String?
+  paymentMethod  PaymentMethod  @default(BANK_TRANSFER)
+  totalAmount    Decimal        @db.Decimal(15, 2)
+  status         PurchaseStatus @default(DRAFT)
+  notes          String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  supplier       Supplier             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  items          PurchaseItem[]
+  inventoryUnits InventoryUnit[]
+  transactions   FinanceTransaction[]
+
+  @@index([purchaseNumber])
+  @@index([supplierId])
+  @@index([purchaseDate])
+  @@index([status])
+}
+
+// ─── 10. Purchase Item ────────────────────────────────────────────────────────
+
+model PurchaseItem {
+  id            String   @id @default(cuid())
+  purchaseId    String
+  variantId     String
+  quantity      Int
+  purchasePrice Decimal  @db.Decimal(15, 2)
+  totalPrice    Decimal  @db.Decimal(15, 2)
+  imei          String?
+  serialNumber  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  purchase Purchase       @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([purchaseId])
+  @@index([variantId])
+}
+
+// ─── 11. Order ────────────────────────────────────────────────────────────────
+
+model Order {
+  id             String         @id @default(cuid())
+  orderNumber    String         @unique
+  customerId     String
+  status         OrderStatus    @default(PENDING)
+  subtotal       Decimal        @db.Decimal(15, 2)
+  shippingCost   Decimal        @default(0) @db.Decimal(15, 2)
+  discount       Decimal        @default(0) @db.Decimal(15, 2)
+  total          Decimal        @db.Decimal(15, 2)
+  deliveryMethod DeliveryMethod @default(DELIVERY)
+  address        String?        @db.Text
+  notes          String?        @db.Text
+  completedAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  customer     Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items        OrderItem[]
+  soldUnits    InventoryUnit[]      @relation("SoldOrder")
+  transactions FinanceTransaction[]
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─── 12. Order Item ───────────────────────────────────────────────────────────
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  variantId           String
+  inventoryUnitId     String?
+  productNameSnapshot String
+  variantSnapshot     String
+  quantity            Int
+  sellingPrice        Decimal  @db.Decimal(15, 2)
+  purchaseCost        Decimal  @default(0) @db.Decimal(15, 2)
+  total               Decimal  @db.Decimal(15, 2)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant       ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  inventoryUnit InventoryUnit? @relation(fields: [inventoryUnitId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([variantId])
+  @@index([inventoryUnitId])
+}
+
+// ─── 13. Finance Category ─────────────────────────────────────────────────────
+
+model FinanceCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  type        FinanceType
+  description String?     @db.Text
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  transactions FinanceTransaction[]
+
+  @@index([type])
+  @@index([active])
+}
+
+// ─── 14. Finance Transaction ──────────────────────────────────────────────────
+
+model FinanceTransaction {
+  id            String        @id @default(cuid())
+  categoryId    String
+  type          FinanceType
+  amount        Decimal       @db.Decimal(15, 2)
+  date          DateTime
+  paymentMethod PaymentMethod @default(BANK_TRANSFER)
+  reference     String?
+  description   String        @db.Text
+  orderId       String?
+  purchaseId    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  category FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  order    Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  purchase Purchase?       @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([type])
+  @@index([date])
+  @@index([orderId])
+  @@index([purchaseId])
+}

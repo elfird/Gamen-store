@@ -1,0 +1,57 @@
+import { cn } from "@/lib/utils";
+
+/**
+ * @param {{
+ *   title?: string,
+ *   description?: string,
+ *   action?: React.ReactNode,
+ *   icon?: React.ReactNode,
+ *   className?: string,
+ * }} props
+ */
+export default function EmptyState({
+  title = "Tidak ada data",
+  description,
+  action,
+  icon,
+  className,
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center py-16 px-6 text-center",
+        className
+      )}
+    >
+      {icon ? (
+        <div className="mb-4 text-secondary">{icon}</div>
+      ) : (
+        <div className="mb-4 h-12 w-12 rounded-full bg-background flex items-center justify-center">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-secondary"
+            aria-hidden="true"
+          >
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="M2 10h20" />
+          </svg>
+        </div>
+      )}
+
+      <h3 className="text-base font-semibold text-text mb-1">{title}</h3>
+
+      {description && (
+        <p className="text-sm text-secondary max-w-sm leading-relaxed mb-4">{description}</p>
+      )}
+
+      {action && <div>{action}</div>}
+    </div>
+  );
+}
