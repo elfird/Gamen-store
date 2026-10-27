@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StoreLayout, PageContainer } from "@/components/store";
 import { Button } from "@/components/ui";
+import { getWhatsAppUrl } from "@/lib/constants";
 
 /**
  * Product 404 Not Found Page
@@ -39,7 +40,7 @@ export default function ProductNotFound() {
                 </Button>
               </Link>
               <a
-                href="https://wa.me/6281234567890?text=Halo%20Admin%20Gamen%20Store,%20saya%20mencari%20tipe%20iPhone%20tertentu"
+                href={getWhatsAppUrl("Halo Admin Gamen Store, saya mencari tipe iPhone tertentu")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto"

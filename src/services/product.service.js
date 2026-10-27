@@ -21,6 +21,7 @@ export function formatProductData(product) {
     storage: v.storage,
     color: v.color,
     price: Number(v.price),
+    compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
     purchasePrice: Number(v.purchasePrice),
     stock: v.stock,
     reservedStock: v.reservedStock,
@@ -36,6 +37,8 @@ export function formatProductData(product) {
   const maxPrice = activeVariants.length > 0
     ? Math.max(...activeVariants.map((v) => v.price))
     : 0;
+  const minVariant = activeVariants.find((v) => v.price === minPrice);
+  const minCompareAtPrice = minVariant?.compareAtPrice || null;
   const totalStock = activeVariants.reduce((sum, v) => sum + v.availableStock, 0);
 
   // Extract unique storage and colors
@@ -75,6 +78,7 @@ export function formatProductData(product) {
     variants,
     minPrice,
     maxPrice,
+    minCompareAtPrice,
     totalStock,
     availableStorages,
     availableColors,
@@ -187,6 +191,63 @@ export async function getModelsOverview() {
     });
   } catch (error) {
     console.error("Error fetching models overview:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch overview of iPhone series for the "Shop by Model" grid.
+ * @returns {Promise<Array>}
+ */
+export async function getSeriesOverview() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        active: true,
+        category: { slug: "iphone" },
+      },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+        variants: { where: { active: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const seriesDefinitions = [
+      { key: "16", title: "iPhone 16 Series" },
+      { key: "15", title: "iPhone 15 Series" },
+      { key: "14", title: "iPhone 14 Series" },
+      { key: "13", title: "iPhone 13 Series" },
+      { key: "12", title: "iPhone 12 Series" },
+      { key: "11", title: "iPhone 11 Series" },
+    ];
+
+    return seriesDefinitions
+      .map((series) => {
+        const seriesProducts = products.filter((p) =>
+          p.name.toLowerCase().includes(`iphone ${series.key}`)
+        );
+        const thumbnail =
+          seriesProducts[0]?.images?.find((img) => img.isPrimary)?.url ||
+          seriesProducts[0]?.images?.[0]?.url ||
+          null;
+        const allPrices = seriesProducts.flatMap((p) =>
+          p.variants.map((v) => Number(v.price))
+        );
+        const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+
+        return {
+          key: series.key,
+          title: series.title,
+          href: `/products?series=${series.key}`,
+          thumbnail,
+          modelCount: seriesProducts.length,
+          minPrice,
+        };
+      })
+      .filter((s) => s.modelCount > 0);
+  } catch (error) {
+    console.error("Error fetching series overview:", error);
     return [];
   }
 }
@@ -415,5 +476,150 @@ function getProductSpecifications(name = "", _model = "") {
       ],
     },
   ];
+}
+
+/**
+ * Fetch active categories for filter navigation.
+ * @returns {Promise<Array>}
+ */
+export async function getCategories() {
+  try {
+    return await prisma.category.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch products catalog with multi-facet filtering and sorting.
+ *
+ * Supported filters:
+ * - search: keyword match across name, description, model
+ * - category: category slug ("iphone", "accessories", "deals")
+ * - series: model series number ("16", "15", "14")
+ * - storage: variant storage capacity ("128GB", "256GB", "512GB", "1TB")
+ * - condition: "NEW" vs "SECOND" / "LIKE_NEW"
+ * - sort: "price_asc", "price_desc", "newest", "default"
+ *
+ * @param {Object} [filters]
+ * @returns {Promise<Array>}
+ */
+export async function getProducts({
+  search = "",
+  category = "",
+  series = "",
+  storage = "",
+  condition = "",
+  sort = "default",
+} = {}) {
+  try {
+    const where = {
+      active: true,
+    };
+
+    // 1. Search Query
+    if (search && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { model: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    // 2. Category Filter
+    if (category && category !== "all") {
+      if (category.toLowerCase() === "deals") {
+        where.featured = true;
+      } else {
+        where.category = {
+          slug: { equals: category, mode: "insensitive" },
+        };
+      }
+    }
+
+    // 3. Series Filter (e.g. "16", "15", "14")
+    if (series && series !== "all") {
+      const cleanSeries = series
+        .toLowerCase()
+        .replace(/iphone/g, "")
+        .replace(/series/g, "")
+        .trim();
+      if (cleanSeries) {
+        where.name = {
+          contains: cleanSeries,
+          mode: "insensitive",
+        };
+      }
+    }
+
+    // 4. Condition Filter
+    if (condition && condition !== "all") {
+      const upper = condition.toUpperCase();
+      if (upper === "NEW") {
+        where.condition = "NEW";
+      } else if (upper === "SECOND" || upper === "BEKAS") {
+        where.condition = {
+          in: ["LIKE_NEW", "GOOD", "FAIR", "REFURBISHED"],
+        };
+      } else if (["LIKE_NEW", "GOOD", "FAIR", "REFURBISHED"].includes(upper)) {
+        where.condition = upper;
+      }
+    }
+
+    // 5. Storage Filter
+    if (storage && storage !== "all") {
+      where.variants = {
+        some: {
+          storage: { equals: storage, mode: "insensitive" },
+          active: true,
+        },
+      };
+    }
+
+    let orderBy = { createdAt: "desc" };
+    if (sort === "newest") {
+      orderBy = { createdAt: "desc" };
+    }
+
+    const products = await prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+        images: {
+          orderBy: { sortOrder: "asc" },
+        },
+        variants: {
+          where: { active: true },
+          orderBy: { price: "asc" },
+        },
+      },
+      orderBy,
+    });
+
+    let formatted = products.map(formatProductData);
+
+    // 6. In-memory Sorting for accurate variant price
+    if (sort === "price_asc") {
+      formatted.sort((a, b) => a.minPrice - b.minPrice);
+    } else if (sort === "price_desc") {
+      formatted.sort((a, b) => b.minPrice - a.minPrice);
+    } else if (sort === "default") {
+      formatted.sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    }
+
+    return formatted;
+  } catch (error) {
+    console.error("Error fetching products catalog:", error);
+    return [];
+  }
 }
 

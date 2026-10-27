@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
+import { DEFAULT_WHATSAPP_NUMBER } from "@/lib/constants";
 
 /**
  * Generate formatted order number: ORD-YYYYMMDD-XXXX
@@ -38,7 +39,7 @@ export async function generateOrderNumber(tx = prisma) {
 /**
  * Build WhatsApp order message deep link.
  */
-export function generateWhatsAppOrderMessage(order, storePhone = process.env.WHATSAPP_NUMBER || "6281234567890") {
+export function generateWhatsAppOrderMessage(order, storePhone = DEFAULT_WHATSAPP_NUMBER) {
   // Format clean phone number (e.g. 0812 -> 62812)
   let cleanPhone = storePhone.replace(/[^0-9]/g, "");
   if (cleanPhone.startsWith("0")) {
@@ -404,7 +405,7 @@ export async function updateOrderStatus(orderId, newStatus, { imeiAssignments = 
 
     // 2. Transitioning TO 'COMPLETED': Mark sold, deduct stock, record Revenue & COGS
     if (newStatus === "COMPLETED" && previousStatus !== "COMPLETED") {
-      let calculatedTotalCogs = 0;
+      let _calculatedTotalCogs = 0;
 
       for (const item of order.items) {
         // Decrease actual stock and reservedStock
@@ -434,7 +435,7 @@ export async function updateOrderStatus(orderId, newStatus, { imeiAssignments = 
               },
             });
             const unitCost = Number(unit.purchasePrice);
-            calculatedTotalCogs += unitCost * item.quantity;
+            _calculatedTotalCogs += unitCost * item.quantity;
             await tx.orderItem.update({
               where: { id: item.id },
               data: { purchaseCost: unitCost },
@@ -456,7 +457,7 @@ export async function updateOrderStatus(orderId, newStatus, { imeiAssignments = 
               },
             });
             const unitCost = Number(unit.purchasePrice);
-            calculatedTotalCogs += unitCost * item.quantity;
+            _calculatedTotalCogs += unitCost * item.quantity;
             await tx.orderItem.update({
               where: { id: item.id },
               data: {
@@ -466,7 +467,7 @@ export async function updateOrderStatus(orderId, newStatus, { imeiAssignments = 
             });
           } else {
             const fallbackCost = Number(item.variant.purchasePrice || 0);
-            calculatedTotalCogs += fallbackCost * item.quantity;
+            _calculatedTotalCogs += fallbackCost * item.quantity;
           }
         }
       }

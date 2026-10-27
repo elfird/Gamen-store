@@ -29,16 +29,16 @@ export default function SectionContainer({
 }) {
   const variantStyles = {
     transparent: "bg-transparent",
-    surface: "bg-white border-y border-[#D2D2D7]/40",
-    muted: "bg-[#F5F5F7]",
-    dark: "bg-[#111111] text-white",
+    surface: "bg-white",
+    muted: "bg-[#F7F7F8]",
+    dark: "bg-[#171717] text-white",
   };
 
   const paddingStyles = {
     sm: "py-6 sm:py-8",
-    md: "py-10 sm:py-14",
-    lg: "py-14 sm:py-20",
-    xl: "py-20 sm:py-28",
+    md: "py-8 sm:py-10",
+    lg: "py-10 sm:py-14",
+    xl: "py-14 sm:py-18",
   };
 
   const isDark = variant === "dark";
@@ -55,16 +55,14 @@ export default function SectionContainer({
     >
       <PageContainer size={containerSize}>
         {(title || subtitle || badge || action) && (
-          <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
             <div className="max-w-2xl">
               {badge && (
-                <div className="mb-2.5">
+                <div className="mb-1">
                   <span
                     className={clsx(
-                      "inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full tracking-wide uppercase",
-                      isDark
-                        ? "bg-white/10 text-white/90"
-                        : "bg-[#111111]/5 text-[#111111]"
+                      "text-[10px] sm:text-[11px] font-bold tracking-widest uppercase",
+                      isDark ? "text-white/60" : "text-[#737373]"
                     )}
                   >
                     {badge}
@@ -74,8 +72,8 @@ export default function SectionContainer({
               {title && (
                 <h2
                   className={clsx(
-                    "text-2xl sm:text-3xl font-semibold tracking-tight",
-                    isDark ? "text-white" : "text-[#1D1D1F]"
+                    "text-xl sm:text-2xl font-bold tracking-tight",
+                    isDark ? "text-white" : "text-[#171717]"
                   )}
                 >
                   {title}
@@ -84,8 +82,8 @@ export default function SectionContainer({
               {subtitle && (
                 <p
                   className={clsx(
-                    "mt-2 text-sm sm:text-base leading-relaxed",
-                    isDark ? "text-white/70" : "text-[#6E6E73]"
+                    "mt-1 text-xs sm:text-sm leading-relaxed",
+                    isDark ? "text-white/70" : "text-[#737373]"
                   )}
                 >
                   {subtitle}

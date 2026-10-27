@@ -134,17 +134,35 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  /** @param {string} message @param {{ title?: string, variant?: string, duration?: number }} options */
-  const toast = useCallback((message, options = {}) => {
+  /** 
+   * @param {string|{ title?: string, message?: string, description?: string, variant?: string, duration?: number }} messageOrOptions 
+   * @param {{ title?: string, variant?: string, duration?: number }} [options={}]
+   */
+  const toast = useCallback((messageOrOptions, options = {}) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    let message = "";
+    let title = options.title;
+    let variant = options.variant ?? "default";
+    let duration = options.duration ?? 4500;
+
+    if (typeof messageOrOptions === "string") {
+      message = messageOrOptions;
+    } else if (typeof messageOrOptions === "object" && messageOrOptions !== null) {
+      message = messageOrOptions.description || messageOrOptions.message || "";
+      if (messageOrOptions.title !== undefined) title = messageOrOptions.title;
+      if (messageOrOptions.variant !== undefined) variant = messageOrOptions.variant;
+      if (messageOrOptions.duration !== undefined) duration = messageOrOptions.duration;
+    }
+
     setToasts((prev) => [
       ...prev,
       {
         id,
         message,
-        title: options.title,
-        variant: options.variant ?? "default",
-        duration: options.duration ?? 4500,
+        title,
+        variant,
+        duration,
       },
     ]);
     return id;

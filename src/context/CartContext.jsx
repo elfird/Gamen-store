@@ -59,66 +59,67 @@ export function CartProvider({ children }) {
       return;
     }
 
-    setItems((prev) => {
-      const existingIdx = prev.findIndex((item) => item.variantId === variant.id);
+    const existingItem = items.find((item) => item.variantId === variant.id);
 
-      if (existingIdx > -1) {
-        const existing = prev[existingIdx];
-        const newQty = Math.min(existing.quantity + quantity, maxStock);
-
-        if (existing.quantity >= maxStock) {
-          toast({
-            title: "Batas Stok Tercapai",
-            description: `Maksimal pembelian untuk varian ini adalah ${maxStock} unit.`,
-            variant: "warning",
-          });
-          return prev;
-        }
-
-        const updated = [...prev];
-        updated[existingIdx] = {
-          ...existing,
-          quantity: newQty,
-          price: Number(variant.price),
-          availableStock: maxStock,
-        };
-
+    if (existingItem) {
+      if (existingItem.quantity >= maxStock) {
         toast({
-          title: "Keranjang Diperbarui",
-          description: `Jumlah ${product.name} diperbarui menjadi ${newQty} unit.`,
-          variant: "success",
+          title: "Batas Stok Tercapai",
+          description: `Maksimal pembelian untuk varian ini adalah ${maxStock} unit.`,
+          variant: "warning",
         });
-
-        return updated;
+        return;
       }
 
-      // Add new item
-      const newItem = {
-        variantId: variant.id,
-        productId: product.id,
-        name: product.name,
-        slug: product.slug,
-        storage: variant.storage,
-        color: variant.color,
-        sku: variant.sku,
-        price: Number(variant.price),
-        image:
-          product.primaryImage ||
-          product.images?.[0]?.url ||
-          null,
-        availableStock: maxStock,
-        quantity: Math.min(quantity, maxStock),
-        condition: product.condition || "NEW",
-        warranty: product.warranty || "1 Tahun Garansi Resmi",
-      };
+      const newQty = Math.min(existingItem.quantity + quantity, maxStock);
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.variantId === variant.id
+            ? {
+                ...item,
+                quantity: newQty,
+                price: Number(variant.price),
+                availableStock: maxStock,
+              }
+            : item
+        )
+      );
 
       toast({
-        title: "Berhasil Ditambahkan",
-        description: `${product.name} (${variant.storage} - ${variant.color}) masuk ke keranjang.`,
+        title: "Keranjang Diperbarui",
+        description: `Jumlah ${product.name} diperbarui menjadi ${newQty} unit.`,
         variant: "success",
       });
+      return;
+    }
 
-      return [...prev, newItem];
+    // Add new item
+    const newItem = {
+      variantId: variant.id,
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      storage: variant.storage,
+      color: variant.color,
+      sku: variant.sku,
+      price: Number(variant.price),
+      image:
+        product.primaryImage ||
+        product.images?.[0]?.url ||
+        null,
+      availableStock: maxStock,
+      quantity: Math.min(quantity, maxStock),
+      condition: product.condition || "NEW",
+      warranty: product.warranty || "1 Tahun Garansi Resmi",
+    };
+
+    setItems((prev) => [...prev, newItem]);
+
+    toast({
+      title: "Berhasil Ditambahkan",
+      description: `${product.name} (${variant.storage} - ${variant.color}) masuk ke keranjang.`,
+      variant: "success",
     });
   };
 
@@ -150,17 +151,15 @@ export function CartProvider({ children }) {
    * @param {string} variantId
    */
   const removeItem = (variantId) => {
-    setItems((prev) => {
-      const removed = prev.find((item) => item.variantId === variantId);
-      if (removed) {
-        toast({
-          title: "Item Dihapus",
-          description: `${removed.name} telah dihapus dari keranjang.`,
-          variant: "info",
-        });
-      }
-      return prev.filter((item) => item.variantId !== variantId);
-    });
+    const removed = items.find((item) => item.variantId === variantId);
+    setItems((prev) => prev.filter((item) => item.variantId !== variantId));
+    if (removed) {
+      toast({
+        title: "Item Dihapus",
+        description: `${removed.name} telah dihapus dari keranjang.`,
+        variant: "info",
+      });
+    }
   };
 
   /**

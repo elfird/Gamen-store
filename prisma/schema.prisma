@@ -135,6 +135,7 @@ model ProductVariant {
   storage       String   // e.g. "128GB", "256GB", "512GB", "1TB"
   color         String
   price         Decimal  @db.Decimal(15, 2)
+  compareAtPrice Decimal? @db.Decimal(15, 2)
   purchasePrice Decimal  @db.Decimal(15, 2)
   stock         Int      @default(0)
   reservedStock Int      @default(0)
@@ -393,3 +394,24 @@ model FinanceTransaction {
   @@index([orderId])
   @@index([purchaseId])
 }
+
+// ─── 15. Store Setting ────────────────────────────────────────────────────────
+
+model StoreSetting {
+  id                  String   @id @default(cuid())
+  key                 String   @unique @default("default")
+  storeName           String   @default("Gamen Store")
+  storeDescription    String?  @db.Text
+  whatsappNumber      String   @default("6282297046402")
+  email               String?  @default("support@gamenstore.com")
+  address             String?  @db.Text
+  defaultShippingCost Decimal  @default(0) @db.Decimal(15, 2)
+  currency            String   @default("IDR")
+  orderPrefix         String   @default("ORD")
+  messageTemplate     String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([key])
+}
+

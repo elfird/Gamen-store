@@ -191,3 +191,10 @@ export function isPositiveNumber(value) {
 export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+export {
+  DEFAULT_WHATSAPP_NUMBER,
+  formatWhatsAppNumber,
+  getWhatsAppUrl,
+} from "./constants";
+

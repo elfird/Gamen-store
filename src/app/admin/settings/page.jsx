@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DEFAULT_WHATSAPP_NUMBER } from "@/lib/constants";
 
 export default function AdminSettingsPage() {
   const [form, setForm] = useState({
     storeName: "Gamen Store",
     storeDescription: "",
-    whatsappNumber: "081234567890",
+    whatsappNumber: DEFAULT_WHATSAPP_NUMBER,
     email: "support@gamenstore.com",
     address: "",
     defaultShippingCost: 0,
@@ -140,7 +141,7 @@ export default function AdminSettingsPage() {
               required
               value={form.whatsappNumber}
               onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-              placeholder="081234567890"
+              placeholder="6282297046402"
               className="w-full px-3.5 py-2 rounded-xl border border-border bg-background text-text text-xs focus:outline-none"
             />
             <p className="text-[11px] text-text-secondary mt-1">

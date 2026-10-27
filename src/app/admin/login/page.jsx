@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export default function AdminLoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({
-    email: "admin@gamenstore.com",
+    email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="admin@gamenstore.com"
+                placeholder="admin@domain.com"
                 className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
@@ -97,12 +97,6 @@ export default function AdminLoginPage() {
                 placeholder="••••••••"
                 className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
-            </div>
-
-            <div className="p-3 bg-surface-secondary rounded-xl text-[11px] text-text-secondary border border-border/50">
-              <span className="font-semibold text-text block mb-0.5">Kredensial Default Demo:</span>
-              Email: <code>admin@gamenstore.com</code> <br />
-              Password: <code>admin123456</code>
             </div>
 
             <button

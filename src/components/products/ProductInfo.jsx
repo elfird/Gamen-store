@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import clsx from "clsx";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getWhatsAppUrl } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { useCart } from "@/context/CartContext";
 import { Badge, Button } from "@/components/ui";
@@ -48,6 +48,8 @@ export default function ProductInfo({ product }) {
   const [selectedStorage, setSelectedStorage] = useState(storageOptions[0] || "");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0] || "");
   const [quantity, setQuantity] = useState(1);
+  const [customerName, setCustomerName] = useState("");
+  const [customerCity, setCustomerCity] = useState("");
 
   // Find the exact matching variant based on selected storage and color
   const currentVariant = useMemo(() => {
@@ -112,20 +114,49 @@ export default function ProductInfo({ product }) {
     });
   };
 
-  // WhatsApp Pre-filled URL Generator
+  // WhatsApp Pre-filled URL Generator matching standardized Buy Flow
   const generateWhatsAppUrl = () => {
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "6281234567890";
-    const text = `Halo Admin Gamen Store, saya ingin memesan:\n\n` +
-      `📱 *Produk:* ${name}\n` +
-      `💾 *Kapasitas:* ${currentVariant?.storage || selectedStorage}\n` +
-      `🎨 *Warna:* ${currentVariant?.color || selectedColor}\n` +
-      `🔖 *SKU:* ${currentSku}\n` +
-      `💰 *Harga:* ${formatCurrency(currentPrice)}\n` +
-      `📦 *Jumlah:* ${quantity} unit\n` +
-      `🛡️ *Kondisi:* ${condition === "NEW" ? "Baru (Segel Resmi)" : "Like New (Original)"}\n\n` +
-      `Mohon info ketersediaan unit dan rekening pembayaran. Terima kasih!`;
+    const lines = ["Halo Gamen Store, saya ingin memesan iPhone.\n"];
 
-    return `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+    if (name) lines.push(`Produk: ${name}`);
+
+    // Varian: storage + color
+    const variantParts = [];
+    const storageVal = currentVariant?.storage || selectedStorage;
+    const colorVal = currentVariant?.color || selectedColor;
+    if (storageVal && storageVal !== "Standard") variantParts.push(storageVal);
+    if (colorVal && colorVal !== "Standard") variantParts.push(colorVal);
+    if (variantParts.length > 0) {
+      lines.push(`Varian: ${variantParts.join(" - ")}`);
+    }
+
+    // Kondisi
+    if (condition) {
+      const conditionLabel = condition === "NEW" ? "Baru (Segel Resmi)" : "Like New (Original Ex-Resmi)";
+      lines.push(`Kondisi: ${conditionLabel}`);
+    }
+
+    // Jumlah
+    if (quantity) {
+      lines.push(`Jumlah: ${quantity}`);
+    }
+
+    // Harga tertera aktual
+    if (currentPrice) {
+      lines.push(`Harga tertera: ${formatCurrency(currentPrice)}`);
+    }
+
+    // Informasi kontak opsional jika diisi
+    if (customerName.trim()) {
+      lines.push(`Nama Pemesan: ${customerName.trim()}`);
+    }
+    if (customerCity.trim()) {
+      lines.push(`Kota/Tujuan: ${customerCity.trim()}`);
+    }
+
+    lines.push("\nMohon konfirmasi ketersediaan stok, harga final, dan proses pemesanan. Terima kasih.");
+
+    return getWhatsAppUrl(lines.join("\n"));
   };
 
   return (
@@ -152,22 +183,29 @@ export default function ProductInfo({ product }) {
       </div>
 
       {/* ─── Price & SKU Display ────────────────────────────────────────────── */}
-      <div className="p-5 rounded-2xl bg-[#F5F5F7] border border-[#D2D2D7]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 rounded-2xl bg-[#F7F7F8] border border-[#E5E5E5] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[11px] uppercase font-semibold tracking-wider text-[#86868B] block">
+          <span className="text-[11px] uppercase font-bold tracking-wider text-[#737373] block">
             Harga Spesial
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold text-[#111111] tracking-tight mt-0.5">
-            {formatCurrency(currentPrice)}
-          </p>
-          <span className="text-[11px] text-[#6E6E73]">
+          <div className="flex items-baseline gap-2.5 flex-wrap mt-0.5">
+            <p className="text-2xl sm:text-3xl font-extrabold text-[#171717] tracking-tight">
+              {formatCurrency(currentPrice)}
+            </p>
+            {currentVariant?.compareAtPrice && Number(currentVariant.compareAtPrice) > Number(currentPrice) && (
+              <span className="text-sm sm:text-base text-[#737373] line-through font-medium">
+                {formatCurrency(currentVariant.compareAtPrice)}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] text-[#737373]">
             Harga resmi termasuk garansi & PPN
           </span>
         </div>
 
         <div className="sm:text-right space-y-1">
           <div className="flex items-center sm:justify-end space-x-1.5">
-            <span className="text-xs text-[#6E6E73]">Status:</span>
+            <span className="text-xs text-[#737373]">Status:</span>
             {isAvailable ? (
               <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#16A34A]/10 text-[#16A34A]">
                 Tersedia ({stockCount} unit)
@@ -178,7 +216,7 @@ export default function ProductInfo({ product }) {
               </span>
             )}
           </div>
-          <p className="text-[11px] font-mono text-[#86868B]">
+          <p className="text-[11px] font-mono text-[#737373]">
             SKU: {currentSku}
           </p>
         </div>
@@ -186,8 +224,8 @@ export default function ProductInfo({ product }) {
 
       {/* ─── Used Device Guarantee Block (If Condition !== "NEW") ───────────── */}
       {condition !== "NEW" && (
-        <div className="p-4 rounded-2xl bg-[#D97706]/5 border border-[#D97706]/20 space-y-3">
-          <div className="flex items-center space-x-2 text-[#D97706]">
+        <div className="p-4 rounded-2xl bg-[#F7F7F8] border border-[#E5E5E5] space-y-3">
+          <div className="flex items-center space-x-2 text-[#171717]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
@@ -197,21 +235,21 @@ export default function ProductInfo({ product }) {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="bg-white p-2.5 rounded-xl border border-[#D2D2D7]/40">
-              <span className="text-[#86868B] block text-[10px]">Battery Health</span>
-              <span className="font-bold text-[#1D1D1F]">{batteryHealthDisplay}</span>
+            <div className="bg-white p-2.5 rounded-xl border border-[#E5E5E5]">
+              <span className="text-[#737373] block text-[10px]">Battery Health</span>
+              <span className="font-bold text-[#171717]">{batteryHealthDisplay}</span>
             </div>
-            <div className="bg-white p-2.5 rounded-xl border border-[#D2D2D7]/40">
-              <span className="text-[#86868B] block text-[10px]">Kondisi Fisik</span>
-              <span className="font-bold text-[#1D1D1F]">Mulus 98-99%</span>
+            <div className="bg-white p-2.5 rounded-xl border border-[#E5E5E5]">
+              <span className="text-[#737373] block text-[10px]">Kondisi Fisik</span>
+              <span className="font-bold text-[#171717]">Mulus 98-99%</span>
             </div>
-            <div className="bg-white p-2.5 rounded-xl border border-[#D2D2D7]/40">
-              <span className="text-[#86868B] block text-[10px]">Garansi Sinyal</span>
+            <div className="bg-white p-2.5 rounded-xl border border-[#E5E5E5]">
+              <span className="text-[#737373] block text-[10px]">Garansi Sinyal</span>
               <span className="font-bold text-[#16A34A]">Permanen Bebas Blokir</span>
             </div>
-            <div className="bg-white p-2.5 rounded-xl border border-[#D2D2D7]/40">
-              <span className="text-[#86868B] block text-[10px]">Kelengkapan</span>
-              <span className="font-bold text-[#1D1D1F]">Fullset Box & Kabel</span>
+            <div className="bg-white p-2.5 rounded-xl border border-[#E5E5E5]">
+              <span className="text-[#737373] block text-[10px]">Kelengkapan</span>
+              <span className="font-bold text-[#171717]">Fullset Box & Kabel</span>
             </div>
           </div>
         </div>
@@ -221,10 +259,10 @@ export default function ProductInfo({ product }) {
       {storageOptions.length > 0 && storageOptions[0] !== "Standard" && (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[#1D1D1F] uppercase tracking-wider">
+            <span className="font-semibold text-[#171717] uppercase tracking-wider">
               Pilih Kapasitas Penyimpanan
             </span>
-            <span className="text-[#6E6E73] font-medium">{selectedStorage}</span>
+            <span className="text-[#737373] font-medium">{selectedStorage}</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -239,13 +277,13 @@ export default function ProductInfo({ product }) {
                   className={clsx(
                     "p-3 rounded-2xl border text-center transition-all focus:outline-none",
                     isSelected
-                      ? "border-[#111111] bg-white ring-2 ring-[#111111]/10 shadow-xs"
-                      : "border-[#D2D2D7] bg-white hover:border-[#86868B]"
+                      ? "border-[#171717] bg-white ring-2 ring-[#171717]/10 shadow-xs"
+                      : "border-[#E5E5E5] bg-white hover:border-[#737373]"
                   )}
                 >
-                  <span className="block text-sm font-bold text-[#1D1D1F]">{st}</span>
+                  <span className="block text-sm font-bold text-[#171717]">{st}</span>
                   {variantForStorage && (
-                    <span className="block text-[11px] text-[#6E6E73] mt-0.5">
+                    <span className="block text-[11px] text-[#737373] mt-0.5">
                       {formatCurrency(variantForStorage.price, { compact: true })}
                     </span>
                   )}
@@ -260,10 +298,10 @@ export default function ProductInfo({ product }) {
       {colorOptions.length > 0 && colorOptions[0] !== "Standard" && (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[#1D1D1F] uppercase tracking-wider">
+            <span className="font-semibold text-[#171717] uppercase tracking-wider">
               Pilih Warna
             </span>
-            <span className="text-[#6E6E73] font-medium">{selectedColor}</span>
+            <span className="text-[#737373] font-medium">{selectedColor}</span>
           </div>
 
           <div className="flex flex-wrap gap-2.5">
@@ -277,12 +315,12 @@ export default function ProductInfo({ product }) {
                   className={clsx(
                     "inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all focus:outline-none bg-white",
                     isSelected
-                      ? "border-[#111111] ring-2 ring-[#111111]/10 shadow-xs font-bold text-[#111111]"
-                      : "border-[#D2D2D7] text-[#424245] hover:border-[#86868B]"
+                      ? "border-[#171717] ring-2 ring-[#171717]/10 shadow-xs font-bold text-[#171717]"
+                      : "border-[#E5E5E5] text-[#171717] hover:border-[#737373]"
                   )}
                 >
                   <span
-                    className="w-3.5 h-3.5 rounded-full border border-[#D2D2D7] inline-block shrink-0"
+                    className="w-3.5 h-3.5 rounded-full border border-[#E5E5E5] inline-block shrink-0"
                     style={{ backgroundColor: getColorHex(clr) }}
                   />
                   <span>{clr}</span>
@@ -293,27 +331,51 @@ export default function ProductInfo({ product }) {
         </div>
       )}
 
-      {/* ─── Quantity & Order Actions ────────────────────────────────────────── */}
-      <div className="pt-4 space-y-3.5">
+      {/* ─── Quantity & WhatsApp Direct Order Actions ───────────────────────── */}
+      <div className="pt-4 space-y-4">
+        {/* Optional Contact Info for Quick Pre-fill */}
+        <div className="space-y-2">
+          <span className="text-xs font-semibold text-[#171717] block">
+            Informasi Pemesan (Opsional)
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input
+              type="text"
+              placeholder="Nama Pemesan (opsional)"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-[#E5E5E5] bg-white text-xs text-[#171717] placeholder-[#737373] focus:outline-none focus:border-[#171717]"
+            />
+            <input
+              type="text"
+              placeholder="Kota / Alamat Pengiriman (opsional)"
+              value={customerCity}
+              onChange={(e) => setCustomerCity(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-[#E5E5E5] bg-white text-xs text-[#171717] placeholder-[#737373] focus:outline-none focus:border-[#171717]"
+            />
+          </div>
+        </div>
+
+        {/* Quantity Stepper & Primary WhatsApp CTA */}
         <div className="flex items-center space-x-3">
-          <div className="flex items-center border border-[#D2D2D7] rounded-xl bg-white p-1">
+          <div className="flex items-center border border-[#E5E5E5] rounded-xl bg-white p-1">
             <button
               type="button"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
               disabled={quantity <= 1}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#1D1D1F] hover:bg-[#F5F5F7] disabled:opacity-40 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#171717] hover:bg-[#F7F7F8] disabled:opacity-40 transition-colors cursor-pointer"
               aria-label="Kurangi jumlah"
             >
               -
             </button>
-            <span className="w-10 text-center text-sm font-bold text-[#1D1D1F]">
+            <span className="w-10 text-center text-sm font-bold text-[#171717]">
               {quantity}
             </span>
             <button
               type="button"
               onClick={() => setQuantity(Math.min(stockCount || 1, quantity + 1))}
               disabled={quantity >= stockCount}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#1D1D1F] hover:bg-[#F5F5F7] disabled:opacity-40 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#171717] hover:bg-[#F7F7F8] disabled:opacity-40 transition-colors cursor-pointer"
               aria-label="Tambah jumlah"
             >
               +
@@ -326,19 +388,24 @@ export default function ProductInfo({ product }) {
               target="_blank"
               rel="noopener noreferrer"
               className={clsx(
-                "w-full inline-flex items-center justify-center space-x-2 h-11 px-5 rounded-xl font-bold text-sm text-white shadow-md transition-all",
+                "w-full inline-flex items-center justify-center space-x-2 h-11 px-5 rounded-xl font-bold text-sm text-white shadow-xs transition-all",
                 isAvailable
-                  ? "bg-[#16A34A] hover:bg-[#15803D] hover:scale-[1.01]"
-                  : "bg-[#6E6E73] pointer-events-none opacity-50"
+                  ? "bg-[#16A34A] hover:bg-[#15803D]"
+                  : "bg-[#737373] pointer-events-none opacity-50"
               )}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
               </svg>
-              <span>Order via WhatsApp</span>
+              <span>Pesan via WhatsApp</span>
             </a>
           </div>
         </div>
+
+        {/* Reassurance text regarding WhatsApp-first process */}
+        <p className="text-[11px] text-[#737373] leading-relaxed">
+          Setelah menekan tombol, sistem akan membuka WhatsApp resmi Gamen Store dengan rincian pesanan. Konfirmasi ketersediaan fisik, dokumentasi video QC, dan pembayaran dilanjutkan langsung bersama admin.
+        </p>
 
         <Button
           variant="secondary"
@@ -346,19 +413,19 @@ export default function ProductInfo({ product }) {
           fullWidth
           onClick={handleAddToCart}
           disabled={!isAvailable}
-          className="rounded-xl border border-[#D2D2D7] font-semibold text-sm bg-white hover:bg-[#F5F5F7]"
+          className="rounded-xl border border-[#E5E5E5] font-semibold text-xs bg-white hover:bg-[#F7F7F8] text-[#171717]"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
             <line x1="3" y1="6" x2="21" y2="6" />
             <path d="M16 10a4 4 0 0 1-8 0" />
           </svg>
-          Tambah ke Keranjang
+          Tambah ke Keranjang (Multi-item)
         </Button>
       </div>
 
       {/* ─── Trust Pillars Checklist ────────────────────────────────────────── */}
-      <div className="pt-4 border-t border-[#D2D2D7]/50 space-y-2.5 text-xs text-[#424245]">
+      <div className="pt-4 border-t border-[#E5E5E5] space-y-2.5 text-xs text-[#737373]">
         <div className="flex items-center space-x-2">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5">
             <polyline points="20 6 9 17 4 12" />

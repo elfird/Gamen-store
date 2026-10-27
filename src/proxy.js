@@ -7,7 +7,7 @@ const SECRET_KEY = new TextEncoder().encode(
 
 const COOKIE_NAME = "gamen_admin_session";
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
   // 1. Allow login page and public auth API endpoints freely

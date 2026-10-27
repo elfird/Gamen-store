@@ -131,3 +131,40 @@ export const APP_NAME = "Gamen Store";
 export const APP_DESCRIPTION =
   "iPhone terpercaya dengan garansi resmi. Temukan iPhone terbaru dengan harga terbaik.";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+// ─── WhatsApp Configuration ──────────────────────────────────────────────────
+
+export const DEFAULT_WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ||
+  process.env.WHATSAPP_NUMBER ||
+  "6282297046402";
+
+export const STORE_WHATSAPP_NUMBER = DEFAULT_WHATSAPP_NUMBER;
+
+/**
+ * Format phone number to clean WhatsApp international format without leading 0 or +.
+ * @param {string} [phone]
+ * @returns {string}
+ */
+export function formatWhatsAppNumber(phone = DEFAULT_WHATSAPP_NUMBER) {
+  let clean = String(phone || "").replace(/[^0-9]/g, "");
+  if (clean.startsWith("0")) {
+    clean = "62" + clean.slice(1);
+  }
+  return clean || "6282297046402";
+}
+
+/**
+ * Generate standard WhatsApp click-to-chat URL with prefilled text message.
+ * @param {string} [message]
+ * @param {string} [phone]
+ * @returns {string}
+ */
+export function getWhatsAppUrl(message = "", phone = DEFAULT_WHATSAPP_NUMBER) {
+  const cleanPhone = formatWhatsAppNumber(phone);
+  if (!message) {
+    return `https://wa.me/${cleanPhone}`;
+  }
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
+

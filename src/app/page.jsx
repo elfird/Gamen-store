@@ -1,108 +1,114 @@
 import Link from "next/link";
-import {
-  StoreLayout,
-  PageContainer,
-  SectionContainer,
-} from "@/components/store";
+import Image from "next/image";
+import { StoreLayout, PageContainer, SectionContainer } from "@/components/store";
 import { ProductCard } from "@/components/products";
-import { Button, Badge, EmptyState } from "@/components/ui";
-import { formatCurrency } from "@/lib/utils";
-import {
-  getFeaturedProducts,
-  getLatestProducts,
-  getModelsOverview,
-} from "@/services/product.service";
+import { EmptyState } from "@/components/ui";
+import { getFeaturedProducts, getLatestProducts, getSeriesOverview } from "@/services/product.service";
+
+export const revalidate = 60; // Revalidate every minute for stock updates
 
 export const metadata = {
-  title: "Find Your Next iPhone | Gamen Store",
+  title: "Gamen Store — Jual & Beli iPhone Terpercaya via WhatsApp",
   description:
-    "Discover selected iPhone models with trusted quality and a simple ordering experience. Garansi resmi, IMEI terdaftar Kemenperin, dan konsultasi mudah via WhatsApp.",
+    "Beli iPhone original bergaransi resmi atau jual iPhone lamamu dengan proses cepat, transparan, dan terhubung langsung via WhatsApp resmi Gamen Store.",
 };
 
-// Revalidate page data every 60 seconds (ISR)
-export const revalidate = 60;
-
 export default async function HomePage() {
-  // Fetch dynamic data from database via product.service
-  const [featuredProducts, latestProducts, modelsOverview] = await Promise.all([
-    getFeaturedProducts(),
+  // Concurrently fetch featured iPhones, latest accessories/products, and series overview
+  const [featuredProducts, latestProducts, seriesOverview] = await Promise.all([
+    getFeaturedProducts(8),
     getLatestProducts(8),
-    getModelsOverview(),
+    getSeriesOverview(),
   ]);
 
   return (
     <StoreLayout cartCount={0}>
-      {/* ─── 1. HERO SECTION ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#111111] text-white pt-16 pb-20 sm:pt-28 sm:pb-36 border-b border-white/10">
-        {/* Subtle background glow effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-white/5 to-white/0 rounded-full blur-3xl pointer-events-none" />
-
+      {/* ─── 1. HERO SECTION (Refined Height & Natural Product Visual) ─────── */}
+      <section className="relative overflow-hidden bg-[#F7F7F8] border-b border-[#E5E5E5] pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-12 lg:pb-14">
         <PageContainer>
-          <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-center">
+            {/* Left Column: Editorial Headline & Actions (order-2 on mobile, order-1 on desktop) */}
+            <div className="order-2 lg:order-1 lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+              {/* Eyebrow label */}
+              <div className="inline-flex items-center space-x-2">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-widest text-[#737373] uppercase">
+                  APPLE PREMIUM STORE
+                </span>
+              </div>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.08] text-white">
-              Find Your Next iPhone.
-            </h1>
+              {/* Main Display Headline */}
+              <h1 className="text-3xl sm:text-4xl md:text-[46px] lg:text-[50px] font-bold tracking-tight leading-[1.1] text-[#171717]">
+                Buy Your Next iPhone. Sell Your Current One.
+              </h1>
 
-            {/* Supporting Text */}
-            <p className="text-base sm:text-xl text-[#A1A1A6] font-normal max-w-2xl mx-auto leading-relaxed">
-              Discover selected iPhone models with trusted quality and a simple ordering experience.
-            </p>
+              {/* Supporting Text */}
+              <p className="text-xs sm:text-sm lg:text-base text-[#737373] max-w-lg leading-relaxed font-normal">
+                Temukan iPhone pilihanmu atau jual iPhone lamamu. Mulai prosesnya melalui Gamen Store dan lanjutkan transaksi bersama tim kami di WhatsApp.
+              </p>
 
-            {/* CTA Buttons */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-              <Link
-                href="#featured"
-                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-full bg-white text-[#111111] hover:bg-[#EAEAEA] font-bold text-base transition-all shadow-md hover:scale-[1.02]"
-              >
-                <span className="text-[#111111] font-bold">Shop iPhone</span>
-              </Link>
-              <Link
-                href="#models"
-                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-full bg-transparent text-white border border-white/30 hover:bg-white/10 hover:border-white/50 font-semibold text-base transition-all"
-              >
-                <span className="text-white font-semibold">Shop by Model</span>
-              </Link>
+              {/* CTA Buttons (Buy & Sell equally prominent) */}
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <Link
+                  href="/products?category=iphone"
+                  className="inline-flex items-center justify-center space-x-2 h-10 px-6 rounded-full bg-[#171717] text-white hover:bg-black font-semibold text-xs tracking-tight transition-colors shadow-2xs"
+                >
+                  <span>Beli iPhone</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+
+                <Link
+                  href="/sell-iphone"
+                  className="inline-flex items-center justify-center space-x-2 h-10 px-6 rounded-full bg-white text-[#171717] border border-[#E5E5E5] hover:bg-[#F7F7F8] font-semibold text-xs tracking-tight transition-colors"
+                >
+                  <span>Jual iPhone</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M7 17l9.2-9.2M17 17V8H8" />
+                  </svg>
+                </Link>
+              </div>
             </div>
 
-            {/* Micro Highlights */}
-            <div className="pt-10 grid grid-cols-3 gap-4 border-t border-white/10 text-center max-w-xl mx-auto">
-              <div>
-                <p className="text-lg sm:text-2xl font-bold text-white">100%</p>
-                <p className="text-[11px] sm:text-xs text-[#86868B] uppercase tracking-wider mt-0.5">Original Unit</p>
-              </div>
-              <div>
-                <p className="text-lg sm:text-2xl font-bold text-white">Permanen</p>
-                <p className="text-[11px] sm:text-xs text-[#86868B] uppercase tracking-wider mt-0.5">IMEI Terdaftar</p>
-              </div>
-              <div>
-                <p className="text-lg sm:text-2xl font-bold text-white">&lt; 5 Menit</p>
-                <p className="text-[11px] sm:text-xs text-[#86868B] uppercase tracking-wider mt-0.5">WhatsApp CS</p>
+            {/* Right Column: Seamless Product Visual (order-1 on mobile, order-2 on desktop) */}
+            <div className="order-1 lg:order-2 lg:col-span-5 flex justify-center items-center">
+              <div className="relative w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[400px] flex items-center justify-center">
+                <Image
+                  src="/images/hero_iphone.jpg"
+                  alt="Apple iPhone 16 Pro Flagship Lineup"
+                  width={400}
+                  height={360}
+                  priority
+                  className="w-full h-auto max-h-[260px] sm:max-h-[320px] lg:max-h-[360px] object-contain hover:scale-[1.02] transition-transform duration-200"
+                />
               </div>
             </div>
           </div>
         </PageContainer>
       </section>
 
-      {/* ─── 2. FEATURED iPHONES SECTION ─────────────────────────────────────── */}
+      {/* ─── 2. FEATURED iPHONES SECTION (White Surface) ─────────────────────── */}
       <section id="featured" className="scroll-mt-20">
         <SectionContainer
           title="Featured iPhones"
-          subtitle="Koleksi iPhone unggulan dengan jaminan garansi resmi dan performa terbaik."
-          badge="Pilihan Utama"
-          variant="muted"
+          subtitle="Koleksi iPhone original dengan garansi resmi dan kualitas terbaik."
+          badge="PRODUK PILIHAN"
+          variant="surface"
+          padding="lg"
           action={
-            <Link href="#latest">
-              <Button variant="ghost" size="sm" className="text-xs sm:text-sm text-[#111111] font-semibold">
-                Lihat Semua Produk →
-              </Button>
+            <Link
+              href="/products?category=iphone"
+              className="text-xs sm:text-sm font-semibold text-[#171717] hover:underline inline-flex items-center space-x-1"
+            >
+              <span>Lihat Semua Produk</span>
+              <span>→</span>
             </Link>
           }
         >
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {featuredProducts.map((product) => (
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6">
+              {featuredProducts.slice(0, 8).map((product) => (
                 <ProductCard key={product.id} product={product} featured={true} />
               ))}
             </div>
@@ -115,48 +121,57 @@ export default async function HomePage() {
         </SectionContainer>
       </section>
 
-      {/* ─── 3. SHOP BY MODEL SECTION ────────────────────────────────────────── */}
+      {/* ─── 3. SHOP BY MODEL SECTION (#F7F7F8 Muted Surface) ────────────────── */}
       <section id="models" className="scroll-mt-20">
         <SectionContainer
           title="Shop by Model"
-          subtitle="Pilih seri iPhone berdasarkan model spesifik dan kapasitas penyimpanan."
-          badge="Kategori Model"
-          variant="surface"
+          subtitle="Pilih seri iPhone favoritmu dan temukan varian terbaik sesuai kebutuhanmu."
+          badge="KATEGORI PILIHAN"
+          variant="muted"
+          padding="lg"
+          action={
+            <Link
+              href="/products?category=iphone"
+              className="text-xs sm:text-sm font-semibold text-[#171717] hover:underline inline-flex items-center space-x-1"
+            >
+              <span>Lihat Semua</span>
+              <span>→</span>
+            </Link>
+          }
         >
-          {modelsOverview.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {modelsOverview.map((item) => (
+          {seriesOverview.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              {seriesOverview.map((item) => (
                 <Link
-                  key={item.id}
-                  href={`/products/${item.slug}`}
-                  className="group flex items-center justify-between p-5 rounded-2xl bg-[#F5F5F7] hover:bg-white hover:shadow-md border border-[#D2D2D7]/40 hover:border-[#111111]/20 transition-all duration-200"
+                  key={item.key}
+                  href={item.href}
+                  className="group flex flex-col justify-between p-3.5 sm:p-4 rounded-xl bg-white border border-[#E5E5E5] hover:border-[#171717]/40 transition-colors"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-semibold text-[#86868B] uppercase tracking-wider">
-                        {item.categoryName}
-                      </span>
-                      {item.totalStock > 0 ? (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" title="Stok Tersedia" />
-                      ) : null}
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold text-[#1D1D1F] group-hover:text-[#111111] transition-colors">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs text-[#6E6E73]">
-                      Mulai <span className="font-semibold text-[#111111]">{formatCurrency(item.minPrice)}</span>
-                    </p>
+                  <div className="w-full aspect-square mb-2.5 bg-[#F7F7F8] rounded-lg flex items-center justify-center p-2 overflow-hidden">
+                    {item.thumbnail ? (
+                      <Image
+                        src={item.thumbnail}
+                        alt={item.title}
+                        width={120}
+                        height={120}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="1.5">
+                        <rect x="5" y="2" width="14" height="20" rx="2" />
+                        <line x1="12" y1="18" x2="12" y2="18.01" />
+                      </svg>
+                    )}
                   </div>
 
-                  <div className="flex flex-col items-end space-y-2 shrink-0">
-                    <Badge variant="secondary" size="sm">
-                      {item.variantCount} Varian
-                    </Badge>
-                    <div className="w-7 h-7 rounded-full bg-white group-hover:bg-[#111111] group-hover:text-white flex items-center justify-center text-[#1D1D1F] transition-colors shadow-2xs">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm font-semibold text-[#171717] group-hover:text-black transition-colors">
+                      {item.title}
+                    </span>
+                    <span className="text-xs text-[#737373] group-hover:text-[#171717] transition-colors">
+                      →
+                    </span>
                   </div>
                 </Link>
               ))}
@@ -170,16 +185,26 @@ export default async function HomePage() {
         </SectionContainer>
       </section>
 
-      {/* ─── 4. LATEST PRODUCTS SECTION ──────────────────────────────────────── */}
+      {/* ─── 4. LATEST PRODUCTS SECTION (White Surface) ──────────────────────── */}
       <section id="latest" className="scroll-mt-20">
         <SectionContainer
           title="Latest Products"
-          subtitle="Daftar unit iPhone dan aksesoris terbaru yang siap dikirim langsung ke lokasi Anda."
-          badge="Katalog Lengkap"
-          variant="muted"
+          subtitle="Jelajahi koleksi terbaru dari iPhone dan aksesori pilihan dengan kualitas terbaik."
+          badge="PRODUK TERBARU"
+          variant="surface"
+          padding="lg"
+          action={
+            <Link
+              href="/products"
+              className="text-xs sm:text-sm font-semibold text-[#171717] hover:underline inline-flex items-center space-x-1"
+            >
+              <span>Lihat Semua</span>
+              <span>→</span>
+            </Link>
+          }
         >
           {latestProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6">
               {latestProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -193,108 +218,79 @@ export default async function HomePage() {
         </SectionContainer>
       </section>
 
-      {/* ─── 5. WHY GAMEN STORE SECTION ──────────────────────────────────────── */}
-      <SectionContainer variant="surface">
-        <div className="max-w-4xl mx-auto text-center space-y-10">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6E6E73]">
-              Komitmen Kualitas & Pelayanan
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#1D1D1F] tracking-tight mt-2">
-              Why Gamen Store?
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-[#6E6E73] max-w-2xl mx-auto">
-              Kami memastikan setiap transaksi pembelian iPhone Anda berjalan aman, bergaransi resmi, dan transparan dari awal hingga unit tiba di tangan Anda.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-            <div className="p-6 rounded-2xl bg-[#F5F5F7] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
-              <h4 className="text-base font-semibold text-[#1D1D1F]">IMEI Legal Permanen</h4>
-              <p className="text-xs text-[#6E6E73] leading-relaxed">
-                Seluruh unit terdaftar resmi di Kemenperin / Beacukai. Bebas blokir sinyal seumur hidup.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#F5F5F7] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                </svg>
-              </div>
-              <h4 className="text-base font-semibold text-[#1D1D1F]">30+ QC Point Check</h4>
-              <p className="text-xs text-[#6E6E73] leading-relaxed">
-                Inspeksi ketat layar, kamera, baterai, True Tone, dan sensor Face ID sebelum dikirim.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#F5F5F7] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="1" y="3" width="15" height="13" />
-                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                  <circle cx="5.5" cy="18.5" r="2.5" />
-                  <circle cx="18.5" cy="18.5" r="2.5" />
-                </svg>
-              </div>
-              <h4 className="text-base font-semibold text-[#1D1D1F]">Asuransi & Safety Pack</h4>
-              <p className="text-xs text-[#6E6E73] leading-relaxed">
-                Packing kayu tebal dan proteksi asuransi pengiriman penuh ke seluruh pelosok Indonesia.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#F5F5F7] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#111111] text-white flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
-              </div>
-              <h4 className="text-base font-semibold text-[#1D1D1F]">WhatsApp Checkout</h4>
-              <p className="text-xs text-[#6E6E73] leading-relaxed">
-                Tanpa perlu registrasi akun yang rumit. Pesan di web dan konfirmasi instan di WhatsApp.
-              </p>
-            </div>
-          </div>
-        </div>
-      </SectionContainer>
-
-      {/* ─── 6. PROMOTION & TRADE-IN BANNER SECTION ───────────────────────────── */}
-      <section className="py-12 sm:py-20 bg-[#111111] text-white">
+      {/* ─── 5. WHY GAMEN STORE SECTION (#F7F7F8 Muted Surface) ──────────────── */}
+      <section className="bg-[#F7F7F8] border-t border-[#E5E5E5] py-10 sm:py-14">
         <PageContainer>
-          <div className="relative rounded-3xl bg-linear-to-r from-[#1c1c1e] to-[#2c2c2e] border border-white/10 p-8 sm:p-14 overflow-hidden">
-            <div className="max-w-2xl space-y-5 relative z-10">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#16A34A]/20 text-[#16A34A] text-xs font-bold uppercase tracking-wider">
-                Special Launch Promotion
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div>
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-[#737373]">
+                MENGAPA BELI DI GAMEN STORE?
               </span>
-              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
-                Beli iPhone 16 Series, Gratis Adapter 20W Original & Free Ongkir.
+              <h2 className="text-xl sm:text-2xl font-bold text-[#171717] tracking-tight mt-1">
+                Why Gamen Store?
               </h2>
-              <p className="text-sm sm:text-base text-[#A1A1A6] leading-relaxed">
-                Nikmati penawaran eksklusif bundling aksesoris original Apple dan potongan ongkos kirim ke seluruh kota di Indonesia untuk pemesanan minggu ini.
+              <p className="mt-1.5 text-xs sm:text-sm text-[#737373] max-w-xl mx-auto leading-relaxed">
+                Kami berkomitmen untuk memberikan pengalaman belanja terbaik dengan produk asli, harga kompetitif, dan layanan yang dapat diandalkan.
               </p>
-              <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <a
-                  href="https://wa.me/6281234567890?text=Halo%20Admin%20Gamen%20Store,%20saya%20ingin%20klaim%20Promo%20Gratis%20Adapter%2020W%20iPhone%2016"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-[#16A34A] text-white font-semibold text-sm hover:bg-[#15803D] transition-all shadow-md"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 text-center">
+              {/* Feature 1 */}
+              <div className="flex flex-col items-center space-y-2.5 p-3">
+                <div className="w-9 h-9 rounded-full border border-[#E5E5E5] bg-white text-[#171717] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <polyline points="9 12 11 14 15 10" />
                   </svg>
-                  <span>Klaim Promo via WhatsApp</span>
-                </a>
-                <Link href="/deals">
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 rounded-xl">
-                    Detail Syarat & Ketentuan
-                  </Button>
-                </Link>
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#171717]">100% Produk Original</h3>
+                <p className="text-[11px] sm:text-xs text-[#737373] leading-relaxed">
+                  Semua produk bergaransi resmi
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex flex-col items-center space-y-2.5 p-3">
+                <div className="w-9 h-9 rounded-full border border-[#E5E5E5] bg-white text-[#171717] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                  </svg>
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#171717]">Pengiriman Cepat</h3>
+                <p className="text-[11px] sm:text-xs text-[#737373] leading-relaxed">
+                  Pesanan dikirim dalam 1-2 hari kerja
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex flex-col items-center space-y-2.5 p-3">
+                <div className="w-9 h-9 rounded-full border border-[#E5E5E5] bg-white text-[#171717] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#171717]">Garansi Resmi</h3>
+                <p className="text-[11px] sm:text-xs text-[#737373] leading-relaxed">
+                  Klaim garansi lebih mudah
+                </p>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="flex flex-col items-center space-y-2.5 p-3">
+                <div className="w-9 h-9 rounded-full border border-[#E5E5E5] bg-white text-[#171717] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                  </svg>
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#171717]">Customer Support</h3>
+                <p className="text-[11px] sm:text-xs text-[#737373] leading-relaxed">
+                  Siap membantu 24/7
+                </p>
               </div>
             </div>
           </div>

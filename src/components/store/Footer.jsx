@@ -1,248 +1,229 @@
 import Link from "next/link";
 import PageContainer from "./PageContainer";
+import { getWhatsAppUrl, STORE_WHATSAPP_NUMBER } from "@/lib/constants";
 
 /**
- * Footer — Premium Apple-inspired customer-facing footer.
+ * Footer — Clean Editorial Commerce customer-facing footer.
  *
- * Includes:
- * - 4-Column navigation & support links
- * - Brand trust badges (Garansi, IMEI, Safe Shipping)
- * - WhatsApp direct assistance CTA
- * - Legal, copyright, and payment method placeholders
+ * Implements reference design:
+ * - Crisp white #FFFFFF background with #E5E5E5 top border
+ * - Column 1: Brand name, tagline, social icons
+ * - Column 2: Navigasi (Home, iPhone, Accessories, Deals, About)
+ * - Column 3: Bantuan (Track Order, Warranty Check, How to Order, FAQ, Terms)
+ * - Column 4: Kontak (WhatsApp number, Email, Address)
+ * - Bottom Bar: Copyright notice & Privacy / Terms links
  */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  const footerLinks = {
-    products: [
-      { label: "iPhone 16 Pro Max", href: "/iphone?model=16-pro-max" },
-      { label: "iPhone 16 Pro", href: "/iphone?model=16-pro" },
-      { label: "iPhone 16", href: "/iphone?model=16" },
-      { label: "iPhone 15 Pro Max", href: "/iphone?model=15-pro-max" },
-      { label: "iPhone 15 Pro", href: "/iphone?model=15-pro" },
-      { label: "iPhone 15", href: "/iphone?model=15" },
-    ],
-    accessories: [
-      { label: "Apple 20W USB-C Adapter", href: "/accessories?item=adapter-20w" },
-      { label: "MagSafe Charger & Case", href: "/accessories?item=magsafe" },
-      { label: "Semua Aksesoris", href: "/accessories" },
-      { label: "Promo & Bundle Hemat", href: "/deals" },
-    ],
-    support: [
-      { label: "Lacak Status Pesanan", href: "/track-order" },
-      { label: "Cek IMEI & Status Garansi", href: "/warranty-check" },
-      { label: "Panduan Pemesanan via WA", href: "/how-to-order" },
-      { label: "Kebijakan Retur & Garansi", href: "/terms#warranty" },
-      { label: "FAQ & Tanya Jawab", href: "/faq" },
-    ],
-    company: [
-      { label: "Tentang Gamen Store", href: "/about" },
-      { label: "Komitmen Kualitas 100%", href: "/about#commitment" },
-      { label: "Lokasi & Jam Operasional", href: "/contact" },
-      { label: "Kontak WhatsApp CS", href: "https://wa.me/6281234567890", external: true },
-    ],
-  };
-
-  const trustBadges = [
-    {
-      title: "100% Produk Original",
-      desc: "Unit Apple original bersegel dengan part asli.",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
-      ),
-    },
-    {
-      title: "IMEI Terdaftar Kemenperin",
-      desc: "Sinyal aman permanen, bebas blokir seumur hidup.",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <rect x="5" y="2" width="14" height="20" rx="2" />
-          <path d="M12 18h.01" />
-        </svg>
-      ),
-    },
-    {
-      title: "Pengiriman Berasuransi",
-      desc: "Packing kayu & proteksi pengiriman kilat ke seluruh Indonesia.",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <rect x="1" y="3" width="15" height="13" />
-          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-          <circle cx="5.5" cy="18.5" r="2.5" />
-          <circle cx="18.5" cy="18.5" r="2.5" />
-        </svg>
-      ),
-    },
-    {
-      title: "Order Cepat via WhatsApp",
-      desc: "Checkout instan dan konsultasi langsung dengan tim profesional.",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-        </svg>
-      ),
-    },
-  ];
+  // Format WhatsApp number for display: 6282297046402 -> 0822 9704 6402
+  const formattedPhone = STORE_WHATSAPP_NUMBER.startsWith("62")
+    ? `0${STORE_WHATSAPP_NUMBER.slice(2, 5)} ${STORE_WHATSAPP_NUMBER.slice(5, 9)} ${STORE_WHATSAPP_NUMBER.slice(9)}`
+    : STORE_WHATSAPP_NUMBER;
 
   return (
-    <footer className="w-full bg-[#F5F5F7] border-t border-[#D2D2D7]/60 text-[#1D1D1F]">
-      {/* Trust Badges Strip */}
-      <div className="bg-white border-b border-[#D2D2D7]/50 py-10 sm:py-12">
-        <PageContainer>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {trustBadges.map((badge, idx) => (
-              <div key={idx} className="flex items-start space-x-4">
-                <div className="p-3 rounded-2xl bg-[#F5F5F7] text-[#111111] shrink-0">
-                  {badge.icon}
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-[#1D1D1F] tracking-tight">
-                    {badge.title}
-                  </h4>
-                  <p className="mt-1 text-xs text-[#6E6E73] leading-relaxed">
-                    {badge.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </PageContainer>
-      </div>
-
-      {/* Main Footer Links */}
+    <footer className="w-full bg-white border-t border-[#E5E5E5] text-[#171717]">
+      {/* 4-Column Footer Content */}
       <div className="py-12 sm:py-16">
         <PageContainer>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
-            {/* Column 1: iPhone Lineup */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#86868B] mb-4">
-                Lineup iPhone
-              </h3>
-              <ul className="space-y-2.5">
-                {footerLinks.products.map((item, idx) => (
-                  <li key={idx}>
-                    <Link
-                      href={item.href}
-                      className="text-xs sm:text-sm text-[#424245] hover:text-[#111111] transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 2: Accessories */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#86868B] mb-4">
-                Aksesoris & Promo
-              </h3>
-              <ul className="space-y-2.5">
-                {footerLinks.accessories.map((item, idx) => (
-                  <li key={idx}>
-                    <Link
-                      href={item.href}
-                      className="text-xs sm:text-sm text-[#424245] hover:text-[#111111] transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 3: Customer Support */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#86868B] mb-4">
-                Bantuan & Layanan
-              </h3>
-              <ul className="space-y-2.5">
-                {footerLinks.support.map((item, idx) => (
-                  <li key={idx}>
-                    <Link
-                      href={item.href}
-                      className="text-xs sm:text-sm text-[#424245] hover:text-[#111111] transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 4: About & Store Info */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#86868B] mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+            {/* Column 1: Brand & Socials */}
+            <div className="space-y-4">
+              <Link href="/" className="font-bold text-xl tracking-tight text-[#171717] block">
                 Gamen Store
-              </h3>
-              <ul className="space-y-2.5">
-                {footerLinks.company.map((item, idx) => (
-                  <li key={idx}>
-                    {item.external ? (
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs sm:text-sm text-[#424245] hover:text-[#111111] transition-colors inline-flex items-center space-x-1"
-                      >
-                        <span>{item.label}</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                          <polyline points="15 3 21 3 21 9" />
-                          <line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                      </a>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className="text-xs sm:text-sm text-[#424245] hover:text-[#111111] transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              </Link>
+              <p className="text-xs text-[#737373] max-w-xs leading-relaxed">
+                Your trusted iPhone store. Original products, better experience.
+              </p>
 
-              <div className="mt-6 pt-5 border-t border-[#D2D2D7]/60">
-                <div className="text-xs text-[#86868B] space-y-1">
-                  <p className="font-semibold text-[#1D1D1F]">Jam Layanan:</p>
-                  <p>Senin – Minggu: 09.00 – 21.00 WIB</p>
-                  <p className="text-[11px] text-[#86868B]">Respon WhatsApp: &lt; 5 Menit</p>
-                </div>
+              {/* Social Media Icons */}
+              <div className="flex items-center space-x-3 pt-2 text-[#737373]">
+                {/* Instagram */}
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full border border-[#E5E5E5] flex items-center justify-center hover:text-[#171717] hover:border-[#171717] transition-colors"
+                  aria-label="Instagram"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                  </svg>
+                </a>
+
+                {/* YouTube */}
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full border border-[#E5E5E5] flex items-center justify-center hover:text-[#171717] hover:border-[#171717] transition-colors"
+                  aria-label="YouTube"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
+                  </svg>
+                </a>
+
+                {/* TikTok */}
+                <a
+                  href="https://tiktok.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full border border-[#E5E5E5] flex items-center justify-center hover:text-[#171717] hover:border-[#171717] transition-colors"
+                  aria-label="TikTok"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                  </svg>
+                </a>
+
+                {/* Twitter / X */}
+                <a
+                  href="https://x.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full border border-[#E5E5E5] flex items-center justify-center hover:text-[#171717] hover:border-[#171717] transition-colors"
+                  aria-label="X (Twitter)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
               </div>
+            </div>
+
+            {/* Column 2: Navigasi */}
+            <div>
+              <h3 className="text-xs font-bold text-[#171717] mb-4">
+                Navigasi
+              </h3>
+              <ul className="space-y-2.5 text-xs text-[#737373]">
+                <li>
+                  <Link href="/" className="hover:text-[#171717] transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/products?category=iphone" className="hover:text-[#171717] transition-colors">
+                    Beli iPhone
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/sell-iphone" className="hover:text-[#171717] transition-colors">
+                    Jual iPhone
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/products?category=accessories" className="hover:text-[#171717] transition-colors">
+                    Accessories
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/products?category=deals" className="hover:text-[#171717] transition-colors">
+                    Deals
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="hover:text-[#171717] transition-colors">
+                    About
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 3: Bantuan */}
+            <div>
+              <h3 className="text-xs font-bold text-[#171717] mb-4">
+                Bantuan
+              </h3>
+              <ul className="space-y-2.5 text-xs text-[#737373]">
+                <li>
+                  <Link href="/track-order" className="hover:text-[#171717] transition-colors">
+                    Track Order
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/warranty-check" className="hover:text-[#171717] transition-colors">
+                    Warranty Check
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/how-to-order" className="hover:text-[#171717] transition-colors">
+                    How to Order
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="hover:text-[#171717] transition-colors">
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-[#171717] transition-colors">
+                    Terms & Conditions
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Kontak */}
+            <div>
+              <h3 className="text-xs font-bold text-[#171717] mb-4">
+                Kontak
+              </h3>
+              <ul className="space-y-3 text-xs text-[#737373]">
+                <li className="flex items-center space-x-2.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[#171717]">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <a
+                    href={getWhatsAppUrl("Halo Admin Gamen Store, saya ingin tanya info produk")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#171717] transition-colors font-medium text-[#171717]"
+                  >
+                    {formattedPhone}
+                  </a>
+                </li>
+                <li className="flex items-center space-x-2.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[#171717]">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                  <a href="mailto:cs@gamenstore.id" className="hover:text-[#171717] transition-colors">
+                    cs@gamenstore.id
+                  </a>
+                </li>
+                <li className="flex items-center space-x-2.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[#171717]">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span>Tangerang, Indonesia</span>
+                </li>
+              </ul>
             </div>
           </div>
         </PageContainer>
       </div>
 
       {/* Bottom Legal & Copyright Bar */}
-      <div className="border-t border-[#D2D2D7]/60 py-6 text-xs text-[#86868B]">
+      <div className="border-t border-[#E5E5E5] py-6 text-xs text-[#737373]">
         <PageContainer>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center md:text-left">
-              <p>
-                © {currentYear} Gamen Store. Hak cipta dilindungi undang-undang.
-              </p>
-              <p className="text-[11px] text-[#A1A1A6]">
-                Apple, iPhone, MagSafe, and Dynamic Island are trademarks of Apple Inc., registered in the U.S. and other countries.
-              </p>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <p className="text-xs text-[#737373]">
+              © {currentYear} Gamen Store. All rights reserved.
+            </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#6E6E73]">
-              <Link href="/privacy" className="hover:text-[#111111] transition-colors">
-                Kebijakan Privasi
+            <div className="flex items-center space-x-4 text-xs text-[#737373]">
+              <Link href="/privacy" className="hover:text-[#171717] transition-colors">
+                Privacy Policy
               </Link>
               <span>•</span>
-              <Link href="/terms" className="hover:text-[#111111] transition-colors">
-                Syarat & Ketentuan
-              </Link>
-              <span>•</span>
-              <Link href="/legal" className="hover:text-[#111111] transition-colors">
-                Legal
+              <Link href="/terms" className="hover:text-[#171717] transition-colors">
+                Terms & Conditions
               </Link>
             </div>
           </div>

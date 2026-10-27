@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/utils";
+import { StoreLayout } from "@/components/store";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -116,30 +117,33 @@ export default function CheckoutPage() {
 
   if (isHydrated && cartItems.length === 0) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 text-center">
-        <div className="w-20 h-20 rounded-full bg-surface-secondary flex items-center justify-center mb-6 text-text-secondary">
-          <svg className="w-10 h-10 stroke-current fill-none stroke-1.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
+      <StoreLayout>
+        <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-surface-secondary flex items-center justify-center mb-6 text-text-secondary">
+            <svg className="w-8 h-8 stroke-current fill-none stroke-1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text mb-3">
+            Keranjang Belanja Kosong
+          </h1>
+          <p className="text-text-secondary max-w-md mb-8 text-sm">
+            Anda belum memilih produk untuk di-checkout. Silakan pilih iPhone impian Anda di katalog kami.
+          </p>
+          <Link
+            href="/products"
+            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-black transition-colors text-sm"
+          >
+            Lihat Koleksi iPhone
+          </Link>
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text mb-3">
-          Keranjang Belanja Kosong
-        </h1>
-        <p className="text-text-secondary max-w-md mb-8">
-          Anda belum memilih produk untuk di-checkout. Silakan pilih iPhone impian Anda di katalog kami.
-        </p>
-        <Link
-          href="/#featured"
-          className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-black transition-colors"
-        >
-          Lihat Koleksi iPhone
-        </Link>
-      </div>
+      </StoreLayout>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <StoreLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Checkout Breadcrumb / Header */}
       <div className="mb-8">
         <nav className="flex items-center gap-2 text-sm text-text-secondary mb-3">
@@ -483,5 +487,6 @@ export default function CheckoutPage() {
         </div>
       </form>
     </div>
+  </StoreLayout>
   );
 }

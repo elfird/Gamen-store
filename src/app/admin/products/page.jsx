@@ -157,6 +157,12 @@ export default function AdminProductsPage() {
                         </Badge>
                       </td>
                       <td className="px-5 py-3.5 text-right space-x-2">
+                        <Link
+                          href={`/admin/products/${prod.id}/edit`}
+                          className="inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-secondary hover:bg-border text-text text-xs font-semibold transition-colors mr-1"
+                        >
+                          Edit
+                        </Link>
                         <button
                           onClick={() => handleToggleArchive(prod.id, prod.active)}
                           className={`text-xs font-bold ${

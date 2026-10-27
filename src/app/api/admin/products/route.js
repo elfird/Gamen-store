@@ -110,10 +110,10 @@ export async function POST(request) {
           } : undefined,
           images: images && images.length > 0 ? {
             create: images.map((img, idx) => ({
-              url: img.url,
-              alt: img.alt || name,
-              isPrimary: idx === 0,
-              sortOrder: idx + 1,
+              url: img.url.trim(),
+              alt: img.alt?.trim() || name,
+              isPrimary: img.isPrimary !== undefined ? Boolean(img.isPrimary) : idx === 0,
+              sortOrder: img.sortOrder ?? (idx + 1),
             })),
           } : undefined,
         },

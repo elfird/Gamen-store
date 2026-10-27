@@ -33,7 +33,20 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, slug, model, categoryId, description, condition, warranty, featured, active, variants } = body;
+    const {
+      name,
+      slug,
+      model,
+      categoryId,
+      description,
+      condition,
+      warranty,
+      featured,
+      active,
+      variants,
+      images,
+      deletedVariantIds,
+    } = body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -50,7 +63,7 @@ export async function PUT(request, { params }) {
 
     const updated = await prisma.$transaction(async (tx) => {
       // 1. Update basic product info
-      const prod = await tx.product.update({
+      await tx.product.update({
         where: { id },
         data: {
           name: name !== undefined ? name.trim() : undefined,
@@ -65,7 +78,28 @@ export async function PUT(request, { params }) {
         },
       });
 
-      // 2. Upsert/Update variants if provided
+      // 2. Handle deleted variants safely (archive if used, delete if unused)
+      if (deletedVariantIds && Array.isArray(deletedVariantIds)) {
+        for (const delId of deletedVariantIds) {
+          const [orderCount, unitCount] = await Promise.all([
+            tx.orderItem.count({ where: { variantId: delId } }),
+            tx.inventoryUnit.count({ where: { variantId: delId } }),
+          ]);
+
+          if (orderCount > 0 || unitCount > 0) {
+            await tx.productVariant.update({
+              where: { id: delId },
+              data: { active: false },
+            });
+          } else {
+            await tx.productVariant.delete({
+              where: { id: delId },
+            });
+          }
+        }
+      }
+
+      // 3. Upsert/Update variants if provided
       if (variants && Array.isArray(variants)) {
         for (const v of variants) {
           if (v.id) {
@@ -98,9 +132,51 @@ export async function PUT(request, { params }) {
         }
       }
 
+      // 4. Sync images if provided
+      if (images && Array.isArray(images)) {
+        const keepImageIds = images.filter((img) => img.id).map((img) => img.id);
+        await tx.productImage.deleteMany({
+          where: {
+            productId: id,
+            id: { notIn: keepImageIds },
+          },
+        });
+
+        for (let idx = 0; idx < images.length; idx++) {
+          const img = images[idx];
+          if (img.url && img.url.trim()) {
+            if (img.id) {
+              await tx.productImage.update({
+                where: { id: img.id },
+                data: {
+                  url: img.url.trim(),
+                  alt: img.alt?.trim() || name || "Foto Produk",
+                  isPrimary: Boolean(img.isPrimary ?? idx === 0),
+                  sortOrder: img.sortOrder ?? idx + 1,
+                },
+              });
+            } else {
+              await tx.productImage.create({
+                data: {
+                  productId: id,
+                  url: img.url.trim(),
+                  alt: img.alt?.trim() || name || "Foto Produk",
+                  isPrimary: Boolean(img.isPrimary ?? idx === 0),
+                  sortOrder: img.sortOrder ?? idx + 1,
+                },
+              });
+            }
+          }
+        }
+      }
+
       return tx.product.findUnique({
         where: { id },
-        include: { category: true, variants: true, images: true },
+        include: {
+          category: true,
+          variants: true,
+          images: { orderBy: { sortOrder: "asc" } },
+        },
       });
     });
 
@@ -149,3 +225,5 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });
   }
 }
+
+export const PATCH = PUT;
